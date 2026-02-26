@@ -64,6 +64,7 @@ async function runAndPersistScan(
       line_number: f.lineNumber,
       column_start: f.columnStart,
       raw_match: f.rawMatch,          // already redacted by scanner
+      code_snippet: f.codeSnippet,
       pattern_name: f.patternName,
       description: f.description,
       remediation: f.remediation,

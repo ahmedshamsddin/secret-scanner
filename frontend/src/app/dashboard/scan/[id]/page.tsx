@@ -70,7 +70,6 @@ export default function ScanDetailPage() {
             <h1 className="text-2xl font-bold text-white mb-1">{scan.title}</h1>
             <div className="flex items-center gap-3 text-xs font-mono text-[#6b7280]">
               <span>{new Date(scan.created_at).toLocaleString()}</span>
-              {scan.language && <span>· {scan.language}</span>}
               <span>· ID: {scan.id.slice(0, 8)}...</span>
             </div>
           </div>
@@ -196,9 +195,13 @@ export default function ScanDetailPage() {
         </button>
         {showCode && (
           <div className="border-t border-[#1e1e2e]">
-            <pre className="code-area w-full p-4 overflow-x-auto text-xs max-h-96 overflow-y-auto rounded-none">
-              {scan.source_code}
-            </pre>
+            {activeFindings.length === 0 ? (
+              <div className="p-4 text-xs text-[#6b7280] font-mono">No active findings to show.</div>
+            ) : (
+              <pre className="code-area w-full p-4 overflow-x-auto text-xs max-h-96 overflow-y-auto rounded-none">
+                {activeFindings.map((finding) => `# ${finding.file_path}:${finding.line_number}\n${finding.code_snippet ?? '[snippet unavailable]'}\n`).join('\n')}
+              </pre>
+            )}
           </div>
         )}
       </div>

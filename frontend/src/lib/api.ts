@@ -56,6 +56,7 @@ export interface Finding {
   line_number: number;
   column_start: number;
   raw_match: string;
+  code_snippet?: string;
   pattern_name: string;
   description: string;
   remediation: string;
