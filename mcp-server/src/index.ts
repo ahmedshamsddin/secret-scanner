@@ -8,6 +8,7 @@ import { readFileSync } from 'fs';
 
 const API_BASE_URL = process.env.SECRET_SCANNER_API_URL ?? 'http://localhost:4000';
 const API_TOKEN = process.env.SECRET_SCANNER_API_TOKEN ?? '';
+const MCP_GITHUB_TOKEN = process.env.SECRET_SCANNER_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN ?? '';
 
 // ── API Client ────────────────────────────────────────────────
 async function apiRequest<T>(
@@ -85,7 +86,7 @@ server.registerTool(
     title: 'Scan GitHub Repository for Secrets',
     description: `Scan a GitHub repository you own for leaked secrets, API keys, tokens, and credentials.
 
-A GitHub personal access token is REQUIRED. It is used to verify you own or have write access to the repository — this prevents scanning repos you don't have permission to access.
+A GitHub personal access token is used to verify you own or have write access to the repository — this prevents scanning repos you don't have permission to access.
 
 Fetches the repo via GitHub API, extracts all text files (skipping node_modules, .git, binaries, etc.), and runs 20+ detection patterns across every file.
 
@@ -93,7 +94,7 @@ Detected secret types include: AWS keys, GitHub tokens, OpenAI API keys, Stripe 
 
 Args:
   - repo_url (string): Full GitHub URL, e.g. "https://github.com/owner/repo"
-  - github_token (string): Your GitHub personal access token (required for ownership verification). Generate at github.com/settings/tokens — needs "repo" scope.
+  - github_token (string, optional): GitHub personal access token override. If omitted, the MCP server uses SECRET_SCANNER_GITHUB_TOKEN / GITHUB_TOKEN from its environment.
   - title (string, optional): Label for this scan. Defaults to "owner/repo"
 
 Returns: Scan summary + list of findings. All secret values are REDACTED — only file path, line number, secret type, and remediation are returned.
@@ -104,16 +105,21 @@ Errors:
   - "Repository not found" → wrong URL or token lacks repo scope`,
     inputSchema: z.object({
       repo_url: z.string().url().describe('GitHub repository URL, e.g. https://github.com/owner/repo'),
-      github_token: z.string().describe('Your GitHub personal access token — required to verify repo ownership. Needs "repo" scope.'),
+      github_token: z.string().optional().describe('Optional GitHub personal access token override. If omitted, uses SECRET_SCANNER_GITHUB_TOKEN/GITHUB_TOKEN configured on MCP server.'),
       title: z.string().max(200).optional().describe('Label for this scan (defaults to owner/repo)'),
     }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
   },
   async ({ repo_url, github_token, title }) => {
     try {
+      const token = github_token?.trim() || MCP_GITHUB_TOKEN;
+      if (!token) {
+        throw new Error('GitHub token missing. Configure SECRET_SCANNER_GITHUB_TOKEN on the MCP server or pass github_token explicitly.');
+      }
+
       const result = await apiRequest<ScanApiResult>('/api/scans/github', 'POST', {
         repo_url,
-        github_token,  // required
+        github_token: token,
         title,
       });
 

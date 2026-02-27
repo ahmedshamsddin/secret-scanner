@@ -145,9 +145,8 @@ scansRouter.post('/zip', requireAuth, upload.single('file'), async (req: Request
 const GithubScanSchema = z.object({
   repo_url: z.string().url().includes('github.com'),
   title: z.string().max(200).optional(),
-  // Token is required — used to verify the caller owns or has write access to the repo.
-  // Without it we have no way to enforce ownership.
-  github_token: z.string().min(1, 'A GitHub personal access token is required to verify repo ownership.'),
+  // Optional per-request token. Falls back to server env when omitted.
+  github_token: z.string().min(1).optional(),
 });
 
 scansRouter.post('/github', requireAuth, async (req: Request, res: Response): Promise<void> => {
@@ -160,7 +159,14 @@ scansRouter.post('/github', requireAuth, async (req: Request, res: Response): Pr
   }
 
   const { repo_url, title, github_token } = parsed.data;
-  const token = github_token; // no server-side fallback — user must provide their own token
+  const token = github_token?.trim() || process.env.GITHUB_TOKEN;
+
+  if (!token) {
+    res.status(400).json({
+      error: 'GitHub token missing. Provide github_token in request or set GITHUB_TOKEN on the backend server.',
+    });
+    return;
+  }
 
   try {
     const { files, repoName, defaultBranch } = await fetchGitHubRepo(repo_url, token);

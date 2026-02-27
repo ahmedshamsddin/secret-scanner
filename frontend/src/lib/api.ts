@@ -80,7 +80,7 @@ export interface ScanResult {
 
 export const api = {
   scans: {
-    scanGitHub: (data: { repo_url: string; title?: string; github_token?: string }) =>
+    scanGitHub: (data: { repo_url: string; title?: string }) =>
       apiFetch<ScanResult>('/api/scans/github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

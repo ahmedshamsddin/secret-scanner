@@ -84,6 +84,10 @@ npm run build
 3. Find the Supabase session and copy `access_token`
 4. Paste it as `SECRET_SCANNER_API_TOKEN` in `.env`
 
+**Optional (recommended for LLM GitHub scans):**
+- Set `SECRET_SCANNER_GITHUB_TOKEN` in `mcp-server/.env` so MCP can scan GitHub repos without asking for a token in tool input.
+- Set `GITHUB_TOKEN` in `backend/.env` so frontend GitHub scans do not require entering a token in the UI.
+
 ---
 
 ## Testing with Claude Desktop (Recommended)
