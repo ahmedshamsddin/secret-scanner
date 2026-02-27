@@ -8,7 +8,7 @@ import { StatCard } from '@/components/StatCard';
 import {
   Github, Upload, ScanLine, CheckCircle,
   ChevronDown, ChevronUp, ExternalLink,
-  FileArchive, AlertTriangle, Key
+  FileArchive, AlertTriangle
 } from 'lucide-react';
 
 type Tab = 'github' | 'zip';
@@ -143,8 +143,6 @@ export default function NewScanPage() {
 
   // GitHub fields
   const [repoUrl, setRepoUrl] = useState('');
-  const [githubToken, setGithubToken] = useState('');
-  const [showToken, setShowToken] = useState(false);
 
   // Zip fields
   const [zipFile, setZipFile] = useState<File | null>(null);
@@ -159,7 +157,6 @@ export default function NewScanPage() {
     try {
       const res = await api.scans.scanGitHub({
         repo_url: repoUrl.trim(),
-        github_token: githubToken.trim() || undefined,
       });
       setResult(res);
     } catch (err) {
@@ -228,33 +225,8 @@ export default function NewScanPage() {
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-mono text-[#6b7280] uppercase tracking-wider">
-                GitHub Token <span className="text-[#ff4444] font-mono">*</span>
-                <span className="text-[#2a2a3e] normal-case font-sans ml-2">(required to verify ownership)</span>
-              </label>
-              <button onClick={() => setShowToken(v => !v)} className="text-xs text-[#6b7280] hover:text-white transition-colors">
-                {showToken ? 'hide' : 'show'}
-              </button>
-            </div>
-            <div className="relative">
-              <Key size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" />
-              <input
-                type={showToken ? 'text' : 'password'}
-                value={githubToken}
-                onChange={e => setGithubToken(e.target.value)}
-                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                className="w-full bg-[#111118] border border-[#1e1e2e] rounded-lg pl-9 pr-4 py-3 text-white text-sm focus:outline-none focus:border-[#00ff9d] transition-all font-mono"
-                required
-              />
-            </div>
-            <p className="text-xs text-[#6b7280] mt-1.5">
-              Used only to verify you own this repo. Never stored.{' '}
-              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-[#00ff9d] hover:underline">
-                Generate a token →
-              </a>
-            </p>
+          <div className="bg-[#111118] border border-[#1e1e2e] rounded-lg p-3 text-xs text-[#6b7280]">
+            <span className="text-white font-mono">Auth:</span> GitHub ownership is verified server-side using the token configured in backend/MCP environment.
           </div>
 
           {error && (
@@ -263,7 +235,7 @@ export default function NewScanPage() {
 
           <button
             onClick={handleGitHubScan}
-            disabled={scanning || !repoUrl.trim() || !githubToken.trim()}
+            disabled={scanning || !repoUrl.trim()}
             className="flex items-center gap-2 bg-[#00ff9d] text-[#0a0a0f] font-bold px-6 py-3 rounded-lg hover:bg-[#00cc7d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono text-sm"
           >
             <ScanLine size={16} />

@@ -42,6 +42,7 @@ create table public.findings (
   line_number       int,
   column_start      int,
   raw_match         text not null,         -- REDACTED (e.g. AKIA****MPLE)
+  code_snippet      text,                  -- redacted source line for triage context
   pattern_name      text not null,
   description       text,
   remediation       text,
